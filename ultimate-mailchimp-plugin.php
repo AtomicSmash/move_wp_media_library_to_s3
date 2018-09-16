@@ -58,7 +58,20 @@ class MoveMediaLibraryToS3 {
 
         $files = $this->get_files_with_no_meta_data();
 
-        $options = get_option('tantan_wordpress_s3');
+        // Get offload
+        $offload_options = get_option('tantan_wordpress_s3');
+
+        if( empty( $offload_options ) ){
+            WP_CLI::error( "Options for 'wp-offload-s3' can't be found. Please make sure it's configured before trying again." );
+        }
+
+        if( $offload_options['region'] == "" ){
+            WP_CLI::error( "No region selected." );
+        }
+
+        if( $offload_options['bucket'] == "" ){
+            WP_CLI::error( "No bucket selected." );
+        }
 
         // if( $options != null && $options['bucket'] != '' && $options['object-prefix'] != '' && $options['region'] != '' ){
         if( $files != false ){
@@ -68,21 +81,19 @@ class MoveMediaLibraryToS3 {
                 $media_url = str_replace( get_bloginfo('url').'/', '', $post->guid );
 
                 $data = array(
-                    'region' => $options['region'],
-                    'bucket' => $options['bucket'],
+                    'region' => $offload_options['region'],
+                    'bucket' => $offload_options['bucket'],
                     'key' => $media_url,
                 );
 
                 WP_CLI::success( "Added meta to attachment with ID: " . $post->ID  );
 
-                // echo "<pre>";
-                // print_r($post);
-                // echo "</pre>";
                 if( $dryrun != true ){
-                    update_post_meta( $post->ID, 'amazonS3_info', $data );
+                    // update_post_meta( $post->ID, 'amazonS3_info', $data );
                 }
 
             }
+
         }else{
 
             WP_CLI::success( "No files found! Everything is up to date 🙂" );
