@@ -35,7 +35,16 @@ class MoveMediaLibraryToS3 {
     }
 
 
-    public function add_meta_data_to_whole_library( ){
+    public function add_meta_data_to_whole_library( $args, $assoc_args ){
+
+        // See if this is a dry run
+        if( isset( $assoc_args['dry-run'] ) ){
+            $dryrun = true;
+            WP_CLI::warning( "This is a dry run, nothing will be saved to the database!" );
+
+        }else{
+            $dryrun = false;
+        }
 
         // Create the logger
         // $logger = new Logger( 'move_wp_media_library_to_s3' );
@@ -69,8 +78,10 @@ class MoveMediaLibraryToS3 {
                 // echo "<pre>";
                 // print_r($post);
                 // echo "</pre>";
+                if( $dryrun != true ){
+                    update_post_meta( $post->ID, 'amazonS3_info', $data );
+                }
 
-                // update_post_meta( $post->ID, 'amazonS3_info', $data );
             }
         }else{
 
