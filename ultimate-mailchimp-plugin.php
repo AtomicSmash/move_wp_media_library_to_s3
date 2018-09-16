@@ -26,7 +26,7 @@ class MoveMediaLibraryToS3 {
         if ( defined( 'WP_CLI' ) && WP_CLI ) {
             // if ( defined( '' ) && defined( '' ) ) {
             // }else{
-            WP_CLI::add_command( 'move-to-s3 find-files-with-no-s3-meta-data', array( $this, 'show_media_with_no_meta_data' ) );
+            WP_CLI::add_command( 'move-to-s3 show-files-with-no-s3-meta-data', array( $this, 'show_media_with_no_meta_data' ) );
             WP_CLI::add_command( 'move-to-s3 add-meta-data-to-library', array( $this, 'add_meta_data_to_whole_library' ) );
 
             // }
@@ -51,13 +51,21 @@ class MoveMediaLibraryToS3 {
 
     public function show_media_with_no_meta_data( ){
 
+        WP_CLI::line( "Finding files..."  );
+
         $files = $this->get_files_with_no_meta_data();
 
-        echo "<pre>";
-        print_r($files);
-        echo "</pre>";
+        if( $files != false ){
 
+            WP_CLI::line( "A total of " . count($files) ." files were found without any S3 meta data."  );
 
+            WP_CLI\Utils\format_items( 'table', $files, array( 'ID', 'post_title' ) );
+
+        }else{
+
+            WP_CLI::success( "No files found! Everything is up to date 🙂" );
+
+        }
 
 
     }
@@ -99,9 +107,9 @@ class MoveMediaLibraryToS3 {
                         'key' => $media_url,
                     );
 
-                    echo "<pre>";
-                    print_r($post);
-                    echo "</pre>";
+                    // echo "<pre>";
+                    // print_r($post);
+                    // echo "</pre>";
 
 
 
