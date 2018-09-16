@@ -89,7 +89,7 @@ class MoveMediaLibraryToS3 {
                 WP_CLI::success( "Added meta to attachment with ID: " . $post->ID  );
 
                 if( $dryrun != true ){
-                    // update_post_meta( $post->ID, 'amazonS3_info', $data );
+                    update_post_meta( $post->ID, 'amazonS3_info', $data );
                 }
 
             }
@@ -148,7 +148,6 @@ class MoveMediaLibraryToS3 {
         }
 
     }
-
 
 }
 
