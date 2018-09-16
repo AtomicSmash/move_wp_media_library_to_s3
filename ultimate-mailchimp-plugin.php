@@ -24,27 +24,96 @@ class MoveMediaLibraryToS3 {
 
         // Setup CLI commands
         if ( defined( 'WP_CLI' ) && WP_CLI ) {
-            if ( defined( '' ) && defined( '' ) ) {
-            }else{
-                WP_CLI::add_command( '', array( $this, '' ) );
-            }
+            // if ( defined( '' ) && defined( '' ) ) {
+            // }else{
+            WP_CLI::add_command( 'move-to-s3 find-files-with-no-s3-meta-data', array( $this, 'show_media_with_no_meta_data' ) );
+            WP_CLI::add_command( 'move-to-s3 add-meta-data-to-library', array( $this, 'add_meta_data_to_whole_library' ) );
+
+            // }
         }
 
     }
 
 
-    private function update_single_user( $order_id = 0, $user_status = 'subscribed', $marketing_preferences = array() ){
-
+    public function add_meta_data_to_whole_library( ){
 
         // Create the logger
-        $logger = new Logger( 'move_media_library_to_s3' );
+        // $logger = new Logger( 'move_wp_media_library_to_s3' );
+        //
+        // $uploads_directory = wp_upload_dir();
+        // $logger->pushHandler(new StreamHandler( $uploads_directory['basedir'] .'/move_wp_media_library_to_s3.log', Logger::DEBUG));
+        // $logger->info( '-------- Order placed --------' );
+        // $logger->info( 'Order ID: ' . $order_id );
+        // // $logger->info( 'Merge fields: ', $merge_fields );
+        // $logger->info( 'Timestamp: '. $date->getTimestamp() );
 
-        $uploads_directory = wp_upload_dir();
-        $logger->pushHandler(new StreamHandler( $uploads_directory['basedir'] .'/move_media_library_to_s3.log', Logger::DEBUG));
-        $logger->info( '-------- Order placed --------' );
-        $logger->info( 'Order ID: ' . $order_id );
-        // $logger->info( 'Merge fields: ', $merge_fields );
-        $logger->info( 'Timestamp: '. $date->getTimestamp() );
+    }
+
+    public function show_media_with_no_meta_data( ){
+
+        $files = $this->get_files_with_no_meta_data();
+
+        echo "<pre>";
+        print_r($files);
+        echo "</pre>";
+
+
+
+
+    }
+
+    private function get_files_with_no_meta_data( ){
+
+
+        $args = array(
+            'post_type' => 'attachment',
+            'post_status' => 'inherit',
+            'posts_per_page' => -1,
+            'meta_query'  => array(
+                array(
+                    'key' => 'amazonS3_info',
+                    // 'compare' => 'EXISTS',
+                    'compare' => 'NOT EXISTS',
+                    'type' => 'STRING'
+               )
+            )
+        );
+
+        $query = new WP_Query( $args );
+
+        $options = get_option('tantan_wordpress_s3');
+
+        // if( $options != null && $options['bucket'] != '' && $options['object-prefix'] != '' && $options['region'] != '' ){
+            if( $query->post_count > 0 ){
+
+                return $query->posts;
+
+
+                foreach( $query->posts as $post ){
+
+                    $media_url = str_replace( get_bloginfo('url').'/', '', $post->guid );
+
+                    $data = array(
+                        'region' => $options['region'],
+                        'bucket' => $options['bucket'],
+                        'key' => $media_url,
+                    );
+
+                    echo "<pre>";
+                    print_r($post);
+                    echo "</pre>";
+
+
+
+                    // update_post_meta( $post->ID, 'amazonS3_info', $data );
+
+                }
+
+            }else{
+                return false;
+            }
+        // }
+
 
 
     }
@@ -52,4 +121,4 @@ class MoveMediaLibraryToS3 {
 
 }
 
-$move_media_library_to_s3 = new MoveMediaLibraryToS3;
+$move_wp_media_library_to_s3 = new MoveMediaLibraryToS3;
