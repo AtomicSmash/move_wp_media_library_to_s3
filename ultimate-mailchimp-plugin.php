@@ -47,6 +47,37 @@ class MoveMediaLibraryToS3 {
         // // $logger->info( 'Merge fields: ', $merge_fields );
         // $logger->info( 'Timestamp: '. $date->getTimestamp() );
 
+        $files = $this->get_files_with_no_meta_data();
+
+        $options = get_option('tantan_wordpress_s3');
+
+        // if( $options != null && $options['bucket'] != '' && $options['object-prefix'] != '' && $options['region'] != '' ){
+        if( $files != false ){
+
+            foreach( $files as $post ){
+
+                $media_url = str_replace( get_bloginfo('url').'/', '', $post->guid );
+
+                $data = array(
+                    'region' => $options['region'],
+                    'bucket' => $options['bucket'],
+                    'key' => $media_url,
+                );
+
+                WP_CLI::success( "Added meta to attachment with ID: " . $post->ID  );
+
+                // echo "<pre>";
+                // print_r($post);
+                // echo "</pre>";
+
+                // update_post_meta( $post->ID, 'amazonS3_info', $data );
+            }
+        }else{
+
+            WP_CLI::success( "No files found! Everything is up to date 🙂" );
+
+        }
+
     }
 
     public function show_media_with_no_meta_data( ){
@@ -72,7 +103,6 @@ class MoveMediaLibraryToS3 {
 
     private function get_files_with_no_meta_data( ){
 
-
         $args = array(
             'post_type' => 'attachment',
             'post_status' => 'inherit',
@@ -89,40 +119,11 @@ class MoveMediaLibraryToS3 {
 
         $query = new WP_Query( $args );
 
-        $options = get_option('tantan_wordpress_s3');
-
-        // if( $options != null && $options['bucket'] != '' && $options['object-prefix'] != '' && $options['region'] != '' ){
-            if( $query->post_count > 0 ){
-
-                return $query->posts;
-
-
-                foreach( $query->posts as $post ){
-
-                    $media_url = str_replace( get_bloginfo('url').'/', '', $post->guid );
-
-                    $data = array(
-                        'region' => $options['region'],
-                        'bucket' => $options['bucket'],
-                        'key' => $media_url,
-                    );
-
-                    // echo "<pre>";
-                    // print_r($post);
-                    // echo "</pre>";
-
-
-
-                    // update_post_meta( $post->ID, 'amazonS3_info', $data );
-
-                }
-
-            }else{
-                return false;
-            }
-        // }
-
-
+        if( $query->post_count > 0 ){
+            return $query->posts;
+        }else{
+            return false;
+        }
 
     }
 
