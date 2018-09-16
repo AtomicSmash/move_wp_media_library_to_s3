@@ -1,5 +1,5 @@
-{
-  "name": "atomicsmash/move-media-library-to-s3",
+{    
+  "name": "atomicsmash/move-wp-media-library-to-s3",
   "description": "Move your WordPress media library",
   "keywords": ["wordpress", "plugin"],
   "homepage": "http://www.atomicsmash.co.uk/",
